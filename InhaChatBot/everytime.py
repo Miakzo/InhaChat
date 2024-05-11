@@ -9,9 +9,7 @@ from appendtojson import write_json
 from dotenv import load_dotenv
 import os
 
-os.chdir(r'C:\Users\jungs\OneDrive\JungSW\011_University\021_2학년_1학기\파이썬기반응용프로그래밍\InhaChatBot\crawled_files')
-options = {'quiet': ''}
-
+os.chdir(r'./InhaChatBot/everytime')
 # 사용하는 브라우저의 드라이버
 driver = webdriver.Edge()
 
@@ -22,8 +20,7 @@ PW = os.environ['PW']
 
 # 웹사이트
 # driver.get('https://everytime.kr')
-# 20000 ~ 22500, 16500 ~ 17700
-page = 17584
+page = 1
 driver.get(f'https://everytime.kr/374912/p/{page}')
 
 # 모바일 웹 이용하기 버튼이 있으면 사용
@@ -41,7 +38,7 @@ driver.find_element(By.XPATH, "/html/body/div[1]/div/form/div[1]/input[2]").send
 driver.find_element(By.XPATH, "/html/body/div[1]/div/form/input").click()
 
 titles = []
-for repeat in range(116):
+for repeat in range(10):
     for i in range(1, 21):
         try:
             # 댓글이 있는 글 중에서 ?가 포함된 글
@@ -69,13 +66,12 @@ for repeat in range(116):
             pass
     url = driver.current_url[30:]
     # 다음 페이지로 넘어가기
-    if url == 0:
+    if url == '1':
         driver.find_element(By.XPATH, '//*[@id="container"]/div[4]/div[2]/a').click()
-    elif url == 1:
+    elif url == '2':
         driver.find_element(By.XPATH, '//*[@id="container"]/div[4]/div[2]/a[2]').click()
     else:
         driver.find_element(By.XPATH, '//*[@id="container"]/div[4]/div[2]/a[3]').click()
-
 # 조건에 맞는 데이터 출력
 for title in titles:
     print(title)

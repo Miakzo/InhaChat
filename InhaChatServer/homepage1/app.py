@@ -9,7 +9,6 @@ API_KEY = os.environ['OPENAI_API_KEY']
 client = OpenAI(api_key=API_KEY)
 
 ASSISTANT_ID = os.environ['OPENAI_ASSISTANT_KEY']
-THREAD_ID = ""
 app = Flask(__name__)
 
 @app.route('/main')
@@ -31,7 +30,7 @@ def ask():
     else:
         with open("thread.txt", "r") as file:
             THREAD_ID = file.read()
-        message = client.beta.threads.messages.create(
+        client.beta.threads.messages.create(
             thread_id=THREAD_ID,
             role="user",
             content=question

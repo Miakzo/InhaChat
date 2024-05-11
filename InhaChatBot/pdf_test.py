@@ -25,4 +25,3 @@ for i in range(37000, 37010):
         pdfkit.from_url(url, title, options=options, configuration=config)
         merge_list.append(f"crawled_files/{title}")
 print(merge_list)
-print("test")
