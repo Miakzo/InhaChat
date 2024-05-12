@@ -11,12 +11,17 @@ client = OpenAI(api_key=API_KEY)
 ASSISTANT_ID = os.environ['OPENAI_ASSISTANT_KEY']
 app = Flask(__name__)
 
-@app.route('/main')
+@app.route('/')
 def main():
     thread = client.beta.threads.create()
     with open("thread.txt", "w") as file:
         file.write(thread.id)
     return render_template('index.html')
+
+@app.route('/login', methods=['POST'])
+def login():
+    
+    return render_template('login.html')
 
 @app.route('/ask', methods=['POST'])
 def ask():
