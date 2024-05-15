@@ -45,7 +45,7 @@
             box-sizing: border-box;
         }
 
-        .signup-form input[type="submit"] {
+        button {
             width: 100%;
             padding: 10px;
             border: none;
@@ -56,7 +56,7 @@
             cursor: pointer;
         }
 
-        .signup-form input[type="submit"]:hover {
+        button:hover {
             background-color: #0056b3;
         }
 
@@ -78,13 +78,39 @@
 <body>
     <div class="signup-form">
         <h2>회원가입</h2>
-        <form method="post" action="#">
-            <input type="text" name="username" placeholder="사용자명" required>
-            <input type="email" name="email" placeholder="이메일" required>
-            <input type="password" name="password" placeholder="비밀번호" required>
-            <input type="submit" value="가입하기">
-        </form>
+        <input type="text" id="user-name" name="username" placeholder="사용자명" required>
+        <input type="email" id="user-email" name="email" placeholder="이메일" required>
+        <input type="password" id="user-password" name="password" placeholder="비밀번호" required>
+        <button onclick="signUp()" >가입하기</button>
         <p>이미 회원이신가요? <a href="#">로그인</a></p>
     </div>
+    <script>
+        function signUp() {
+            var userName = document.getElementById("user-name").value;
+            var userEmail = document.getElementById("user-email").value;
+            var userPassword = document.getElementById("user-password").value;
+            if(userName.trim() === "") return;
+            if(userEmail.trim() === "") return;
+            if(userPassword.trim() === "") return;
+
+            fetch('/sign', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify([
+                    { name: userName },
+                    { email: userEmail },
+                    { password: userPassword }
+                ])
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.redirect) {
+                    window.location.href = data.redirect;
+                }
+            })
+        }
+    </script>
 </body>
 </html>

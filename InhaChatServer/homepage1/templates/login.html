@@ -42,12 +42,12 @@
             box-sizing: border-box;
         }
         
-        .login-wrapper > h2{
+        h2{
             font-size: 24px;
             color: hsl(211, 76%, 63%);
             margin-bottom: 20px;
         }
-        #login-form > input{
+        input, .login{
             width: 100%;
             height: 48px;
             padding: 0 10px;
@@ -56,36 +56,37 @@
             border-radius: 6px;
             background-color: #F8F8F8;
         }
-        #login-form > input::placeholder{
+        input::placeholder{
             color: #D2D2D2;
         }
-        #login-form > input[type="submit"]{
+        .login{
             color: #fff;
             font-size: 16px;
             background-color: #5ac4f4;
             margin-top: 20px;
         }
     
-        #login-form > input[type="checkbox"]{
+        input[type="checkbox"]{
             display: none;
         }
-        #login-form > label{
+        label{
             color: #999999;
         }
-        #login-form input[type="checkbox"] + label{
+        input[type="checkbox"] + label{
             cursor: pointer;
             padding-left: 26px;
             background-image: url("checkbox.png");
             background-repeat: no-repeat;
             background-size: contain;
         }
-        #login-form input[type="checkbox"]:checked + label{
+        input[type="checkbox"]:checked + label{
             background-image: url("checkbox-active.png");
             background-repeat: no-repeat;
             background-size: contain;
         }
 
         .signup-link {
+            background-color: none;
             text-decoration: none;
             color: #5ac4f4; /* 링크 색상 */
             margin-top: 10px;
@@ -107,21 +108,55 @@
     </style>
 </head>
 
-
-
 <body>
         <div class="login-wrapper">
             <h2>Login</h2>
-            <form method="post" action="file:///C:/Users/jiwoo-choi/OneDrive/%EB%B0%94%ED%83%95%20%ED%99%94%EB%A9%B4/json/chatbot.html" id="login-form">
-                <input type="text" name="userName" placeholder="Email">
-                <input type="password" name="userPassword" placeholder="Password">
-                <label for="remember-check">
-                    <input type="checkbox" id="remember-check">아이디 저장하기
-                </label>
-                <input type="submit" value="Login">
-                <a href="file:///C:/Users/jiwoo-choi/Downloads/join-membership.html" class="signup-link">회원가입</a>
-            </form>
+            <input type="text" id="user-email" name="userName" placeholder="Email">
+            <input type="password" id="user-password" name="userPassword" placeholder="Password">
+            <label for="remember-check">
+                <input type="checkbox" id="remember-check">아이디 저장하기
+            </label>
+            <button class="login" onclick="logIn()">Login</button>
+            <a href="file:///C:/Users/jiwoo-choi/Downloads/join-membership.html" class="signup-link">회원가입</a>
+            <button class="signup-link" onclick="sign()">회원가입</button>
         </div>
         <img src="chatbot0.png" alt="Bottom Image" class="bottom-image">
+        <script>
+            function logIn() {
+                var userEmail = document.getElementById("user-email").value;
+                var userPassword = document.getElementById("user-password").value;
+                if(userEmail.trim() === "") return;
+                if(userPassword.trim() === "") return;
+
+                fetch('/check_login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify([
+                        { email: userEmail },
+                        { password: userPassword }
+                    ])
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.redirect) {
+                        window.location.href = data.redirect;
+                    }
+                })
+            }
+            function sign() {
+                fetch('/go_signUp', {
+                    method: 'POST'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.redirect) {
+                        window.location.href = data.redirect;
+                    }
+                    else {}
+                })
+            }
+        </script>
 </body>
 </html>
