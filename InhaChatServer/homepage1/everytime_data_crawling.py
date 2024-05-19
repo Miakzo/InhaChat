@@ -2,10 +2,14 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
 from appendtojson import write_json
+from dotenv import load_dotenv
 import os
 
-def everytime_data_crawling(start, repeat, ID, PW, comments):
-    os.chdir(r'./InhaChatBot/everytime')
+
+def everytime_data_crawling(start, repeat, comments):
+    load_dotenv()
+    ID=os.environ['ID']
+    PW=os.environ['PW']
     
     # 사용하는 브라우저의 드라이버
     driver = webdriver.Edge()

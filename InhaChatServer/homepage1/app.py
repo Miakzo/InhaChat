@@ -5,30 +5,44 @@ import os
 import time
 import pymysql
 from flask_session import Session
+from apscheduler.schedulers.background import BackgroundScheduler
+import atexit
+from everytime_data_crawling import everytime_data_crawling
 
 conn, cur = None, None
 
 def connect():
     return pymysql.connect(host='127.0.0.1', user='root', password='0000', db='user_threadDB.sql', charset='utf8')
 
+def updateChatGPT():
+    try:
+        os.chdir(r'./everytime')
+    except:
+        pass
+    everytime_data_crawling(1, 1, 3)
+    print("update files")
+
 load_dotenv()
 API_KEY = os.environ['OPENAI_API_KEY']
 client = OpenAI(api_key=API_KEY)
 
 ASSISTANT_ID = os.environ['OPENAI_ASSISTANT_KEY']
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '0000'
 app.config['SESSION_TYPE'] = 'filesystem'
 Session(app)
 
-THREAD_ID = None
+
+# scheduler = BackgroundScheduler()
+# scheduler.add_job(func=updateChatGPT, trigger="interval", hours=1)
+# scheduler.start()
+
+# atexit.register(lambda: scheduler.shutdown())
 
 # 메인 화면
 @app.route('/main')
 def main():
-    thread = client.beta.threads.create()
-    with open("thread.txt", "w") as file:
-        file.write(thread.id)
     return render_template('index.html')
 
 # 로그인 화면
@@ -44,14 +58,13 @@ def login_check():
     cur = conn.cursor()
     cur.execute(f"select thread_ID from chatbotuser where email='{data[0]['email']}' and password='{data[1]['password']}'")
     conn.commit()
-    row = list(cur.fetchall())[0][0]
-    print(row)
+    try:
+        row = list(cur.fetchall())[0][0]
+    except IndexError:
+        return jsonify({'error': 'error' })
     session['thread_id'] = row
     conn.close()
-    if row:
-        return jsonify({'redirect': url_for('main')})
-    else:
-        return jsonify({'error': 'error'})
+    return jsonify({'redirect': url_for('main')})
 
 # 회원가입 창으로 이동
 @app.route('/go_signUp', methods=['POST'])
@@ -91,9 +104,10 @@ def ask():
         answer = "오늘은 맑은 날씨예요."
     else:
         THREAD_ID = session.get('thread_id')
-        print(THREAD_ID)
+        
         client.beta.threads.messages.create(
             thread_id=THREAD_ID,
+            
             role="user",
             content=question
         )
