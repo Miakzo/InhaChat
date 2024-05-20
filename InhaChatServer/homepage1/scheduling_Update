@@ -1,0 +1,90 @@
+from openai import OpenAI
+import json
+import os
+from dotenv import load_dotenv
+    
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.common.exceptions import NoSuchElementException
+from appendtojson2 import write_json_everytime
+from appendtojson2 import write_json_inha_notice
+os.chdir(r'C:\Users\SAMSUNG\제이썬')
+
+# 인하대학교 공지사항 url
+url=f'https://www.inha.ac.kr/kr/950/subview.do?&enc=Zm5jdDF8QEB8JTJGYmJzJTJGa3IlMkY4JTJGYXJ0Y2xMaXN0LmRvJTNGcGFnZSUzRDElMjZzcmNoQ29sdW1uJTNEJTI2c3JjaFdyZCUzRCUyNmJic0NsU2VxJTNEJTI2YmJzT3BlbldyZFNlcSUzRCUyNnJnc0JnbmRlU3RyJTNEJTI2cmdzRW5kZGVTdHIlM0QlMjZpc1ZpZXdNaW5lJTNEZmFsc2UlMjY='
+
+options = {'quiet': ''}
+#titles = []
+
+
+old_head=""
+old_date=""
+def Inha_crawling():
+    인하 = {}
+    driver = webdriver.Edge()
+    driver.get(url)
+    edge_driver_path = "/edgedriver_win64/msedgedriver.exe"
+
+    # 파일을 열어서 가장 최신 데이터 찾기( 데이터 거를 기준)
+    with open("인하대학교 테스트.json", "r", encoding="utf-8") as f:
+        content = json.load(f)
+        old_head = content["인하대학교_테스트"][-1]["Question"]
+        old_date = content["인하대학교_테스트"][-1]["date"]
+
+    # === 신규 공지사항 확인 ===
+    for i in range(20,8,-1):
+        try:
+            driver.find_element('xpath', f'//*[@id="menu950_obj2831"]/div[2]/form[2]/table/tbody/tr[{i}]/td[2]/a').click()
+        except:
+            continue
+        head = driver.find_element(By.XPATH, f'//*[@id="_contentBuilder"]/div[1]/div[2]/div[2]/h2').text
+        
+        date = driver.find_element(By.XPATH, f'//*[@id="_contentBuilder"]/div[1]/div[2]/div[1]/div[1]/dl[2]/dd').text
+        contents = driver.find_element(By.XPATH, f'//*[@id="_contentBuilder"]/div[1]/div[2]/div[3]').text
+        인하["Question"] = head
+        인하["Answer"] = contents
+        인하["작성일"] = date
+
+        if old_head != head and old_date <= date:
+            print(os.getcwd())
+            write_json_inha_notice(인하)
+        driver.back()
+    driver.quit()
+
+
+
+def update():
+    # === 순서대로 실행 ===
+    #everytime_data_crawling(1,1,3)
+    #Inha_crawling()
+    
+    # === 파일 업데이트
+    OpenAI.api_key="API_key"
+    client = OpenAI(api_key="API_key")
+
+    # Assuming you have the assistant_id for the existing assistant
+    assistant_id = "assistant_key"  
+
+    #                                               이름은 상관 없음. -- Inha_ChatBot
+    vector_store = client.beta.vector_stores.create(name="Inha_ChatBot")
+
+    # 파일저장경로 확인
+    file_paths = ["C:\\Users\\SAMSUNG\\제이썬\\TEST.json","C:\\Users\\SAMSUNG\\제이썬\\everytime2024y.json"]
+    file_streams = [open(path, "rb") for path in file_paths]
+
+    
+    file_batch = client.beta.vector_stores.file_batches.upload_and_poll(
+        vector_store_id=vector_store.id, files=file_streams
+    )
+
+    # You can print the status and the file counts of the batch to see the result of this operation.
+    print(file_batch.status)
+    print(file_batch.file_counts)
+
+    # 파일 업데이트
+    assistant = client.beta.assistants.update(
+        assistant_id=assistant_id,
+        tool_resources={"file_search": {"vector_store_ids": [vector_store.id]}},
+    )
+
+update()
